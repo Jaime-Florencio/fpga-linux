@@ -1,0 +1,8 @@
+# Arquivos gerados pelo fluxo de compilação FPGA
+build/
+
+# Arquivos temporários e de editores
+*.log
+*~
+*.swp
+

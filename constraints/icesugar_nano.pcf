@@ -1,0 +1,5 @@
+# Clock padrão de 12 MHz fornecido pelo iCELink
+set_io clk D1
+
+# LED amarelo onboard
+set_io led B6
