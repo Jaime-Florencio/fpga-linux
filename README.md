@@ -117,7 +117,7 @@ No Windows + WSL 2, o método recomendado para a primeira gravação é usar a u
 O arquivo gerado no WSL pode ser acessado pelo Explorador de Arquivos do Windows em:
 
 ```text
-\\wsl$\Ubuntu\home\fpga\icesugar-example\build\top.bin
+\\wsl$\Ubuntu\home\fpga\fpga-linux\build\top.bin
 ```
 
 Não é necessário USB passthrough ou `usbipd-win` para esse método. A alternativa com `icesprog` será estudada após a confirmação da placa física.
@@ -128,3 +128,51 @@ Não é necessário USB passthrough ou `usbipd-win` para esse método. A alterna
 - Programar `top.bin` e verificar o LED.
 - Registrar o procedimento de gravação validado.
 - Evoluir para a leitura de sinais digitais de encoder e, posteriormente, multiplexação/demultiplexação do projeto Tetra Pak.
+
+## Compilando pela primeira vez em outro PC
+
+Após instalar o WSL 2, Ubuntu e as ferramentas indicadas acima, clone este repositório dentro do terminal Ubuntu:
+
+```bash
+git clone https://github.com/Jaime-Florencio/fpga-linux.git
+cd fpga-linux
+```
+
+> Como o repositório é privado, entre na conta GitHub `Jaime-Florencio` quando o Git solicitar autenticação.
+
+O arquivo `top.bin` não fica salvo no GitHub: ele é gerado a cada compilação. Crie a pasta de saída e execute o fluxo completo:
+
+```bash
+mkdir -p build
+
+yosys -p "synth_ice40 -top top -json build/top.json" src/top.v
+
+nextpnr-ice40 --lp1k --package cm36 \
+  --pcf constraints/icesugar_nano.pcf \
+  --json build/top.json \
+  --asc build/top.asc \
+  --freq 12
+
+icepack build/top.asc build/top.bin
+```
+
+Ao terminar, o arquivo a programar estará em:
+
+```text
+/home/fpga/fpga-linux/build/top.bin
+```
+
+Com a iCESugar Nano conectada ao Windows por um cabo USB-C de dados, ela deve aparecer como uma unidade USB chamada **iCELink**. Abra no Explorador de Arquivos:
+
+```text
+\\wsl$\Ubuntu\home\fpga\fpga-linux\build\
+```
+
+Em seguida, arraste `top.bin` para a **raiz** da unidade iCELink, como se ela fosse um pendrive:
+
+```text
+Unidade iCELink/
+└── top.bin
+```
+
+O iCELink detecta a cópia e programa automaticamente a FPGA. Aguarde alguns segundos antes de desconectar a placa; o LED amarelo deve começar a piscar.
